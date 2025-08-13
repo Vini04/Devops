@@ -1,0 +1,43 @@
+package com.employeemanagement.controller;
+
+
+// To call the service methods.
+import com.employeemanagement.entity.Employee;
+import com.employeemanagement.service.EmployeeService;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+// @RestController: Marks the class as a RESTful API controller.
+// @RequestMapping("/api/employees"): Maps all endpoints to /api/employees.
+@CrossOrigin(origins = "http://localhost:3000") 
+@RestController
+@RequestMapping("/api/employees")
+public class EmployeeController {
+
+    private final EmployeeService employeeService;
+
+    public EmployeeController(EmployeeService employeeService) {
+        this.employeeService = employeeService;
+    }
+// CRUD Operations
+    // GET /api/employees: Returns a list of all employees.
+    @GetMapping
+    public List<Employee> getAllEmployees() {
+        return employeeService.getAllEmployees(); // Delegates to service layer
+    }
+    
+    // GET - Employee by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee) {
+    	Employee savedEmployee = employeeService.saveEmployee(employee);
+    }
+
+    // POST /api/employees: Allows adding a new employee
+    @PostMapping
+    public Employee createEmployee(@RequestBody Employee employee) {
+        return employeeService.saveEmployee(employee); // Delegates to service
+    }
+}

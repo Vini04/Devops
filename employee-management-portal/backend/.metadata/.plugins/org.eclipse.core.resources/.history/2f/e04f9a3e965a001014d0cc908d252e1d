@@ -1,0 +1,14 @@
+package com.employeemanagement.service;
+
+import java.util.List;
+
+import com.employeemanagement.entity.Employee;
+
+public interface EmployeeService {
+	List<Employee> getAllEmployees();
+	Employee saveEmployee(Employee employee); // optional, if you want to support POST
+//	Employee getEmployeeById(Long id);
+//	Employee createEmployee(Employee employee);
+//    Employee updateEmployee(Long id, Employee employee);
+//    void deleteEmployee(Long id);
+}

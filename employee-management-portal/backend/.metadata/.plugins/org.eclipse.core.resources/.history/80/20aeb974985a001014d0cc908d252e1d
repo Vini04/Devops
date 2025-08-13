@@ -1,0 +1,31 @@
+// ServiceImpl class – implements the actual logic using the repository.
+package com.employeemanagement.service.impl;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.employeemanagement.entity.Employee;
+import com.employeemanagement.repository.EmployeeRepository;
+import com.employeemanagement.service.EmployeeService;
+
+@Service
+public class EmployeeServiceImpl implements EmployeeService{
+	
+	private final EmployeeRepository employeeRepository;
+	
+    public EmployeeServiceImpl(EmployeeRepository employeeRepository) {
+        this.employeeRepository = employeeRepository;
+    }
+
+	@Override
+	public List<Employee> getAllEmployees() {
+		return employeeRepository.findAll(); // Fetches all employees from DB
+	}
+
+	@Override
+	public Employee saveEmployee(Employee employee) {
+		return employeeRepository.save(employee); // Save and return the Employee
+	}
+	
+}

@@ -1,0 +1,60 @@
+// To implement the actual logic using the repository.
+package com.employeemanagement.service.impl;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.employeemanagement.entity.Employee;
+import com.employeemanagement.repository.EmployeeRepository;
+import com.employeemanagement.service.EmployeeService;
+
+@Service
+public class EmployeeServiceImpl implements EmployeeService{
+	
+	private final EmployeeRepository employeeRepository;
+	
+    public EmployeeServiceImpl(EmployeeRepository employeeRepository) {
+        this.employeeRepository = employeeRepository;
+    }
+
+	@Override
+	public List<Employee> getAllEmployees() {
+		return employeeRepository.findAll(); // Fetches all employees from DB
+	}
+
+	@Override
+	public Employee saveEmployee(Employee employee) {
+		return employeeRepository.save(employee); // Save and return the Employee
+	}
+
+	@Override
+	// Find the employee by ID; if not found, throw a RuntimeException
+	public Employee getEmployeeById(Long id) {
+	    return employeeRepository.findById(id)
+	    		// orElseThrow() handles "not found" case safely. ResponseEntity is used for flexible responses.
+	            .orElseThrow(() -> new RuntimeException("Employee not found"));
+	}
+
+	@Override
+	public Employee createEmployee(Employee employee) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Employee updateEmployee(Long id, Employee updatedData) {
+	    Employee employee = getEmployeeById(id);
+	    employee.setName(updatedData.getName());
+	    employee.setDepartment(updatedData.getDepartment());
+	    employee.setSalary(updatedData.getSalary());
+	    return employeeRepository.save(employee);
+	}
+
+	@Override
+	public void deleteEmployee(Long id) {
+	    employeeRepository.deleteById(id);
+		
+	}
+	
+}
