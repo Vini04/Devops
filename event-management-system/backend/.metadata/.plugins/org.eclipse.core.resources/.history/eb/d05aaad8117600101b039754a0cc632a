@@ -1,0 +1,24 @@
+package com.eventmanagement.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.eventmanagement.entity.RSVP;
+import com.eventmanagement.entity.RSVPStatus;
+
+public interface RSVPService {
+	RSVP createRSVP(RSVP rsvp); // Create a new RSVP entry in the database
+	List<RSVP> getRSVPsByEventId(long eventId); // Get all RSVPs for a specific event by event ID
+	List<RSVP> getRSVPsByuserId(long userId); // Get all RSVPs made by a specific user by user ID
+	RSVP updateRSVP(Long rsvpId, RSVP updatedRSVP); // Update an existing RSVP by its ID
+	List<RSVP> getAllRSVPs(); // Get all RSVP entries in the system
+	RSVP createOrUpdateRSVP(String username, Long eventId, RSVPStatus status);
+	List<RSVP> getRSVPsByUsername(String username);
+	Map<String, Long> getRsvpSummary(Long eventId);
+}
+
+// createRSVP(RSVP rsvp): Adds a new RSVP.
+// getRSVPsByEventId(long eventId): Fetches RSVPs for a given event.
+// getRSVPsByuserId(long userId): Fetches RSVPs for a given user.
+// updateRSVP(Long rsvpId, RSVP updatedRSVP): Updates an RSVP by its string usernme.
+// getAllRSVPs(): Fetches all RSVPs in the system.

@@ -1,0 +1,5 @@
+package com.eventmanagement.security.jwt;
+
+public class JwtAuthFilter {
+
+}

@@ -1,0 +1,41 @@
+// Required to make the /signin endpoint work correctly with Spring Security and JWT
+package com.eventmanagement.security.services;
+
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import com.eventmanagement.entity.User;
+import com.eventmanagement.repository.UserRepository;
+
+//  Declares a service that Spring Security will use to load user details during authentication.
+@Service
+public class CustomUserDetailsService implements UserDetailsService {
+	
+	@Autowired
+	private UserRepository userRepository;
+
+	// Overrides the method Spring Security calls during login to fetch user by username.
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		//  Fetches the user from DB. Throws an error if the username doesn’t exist.
+		User user = UserRepository.findByUsername(username)
+				.orElseThrow(() -> new UsernameNotFoundException("User not found"));
+		
+		//  Returns Spring Security’s built-in User object, which holds username, password, and authorities (roles).
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                // Converts your app's Role entities into a format Spring Security understands (GrantedAuthority).
+                user.getRoles().stream()
+                    .map(role -> new SimpleGrantedAuthority(role.getName()))
+                    .collect(Collectors.toList())
+
+        );
+	}
+}
