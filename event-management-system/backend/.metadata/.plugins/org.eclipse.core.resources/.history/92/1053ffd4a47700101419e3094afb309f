@@ -1,0 +1,107 @@
+// For Spring Security 6+
+// Configure which endpoints are public (like /api/auth/**) and which need authentication.
+// Disables CSRF (needed for testing APIs from frontend).
+// Allows all incoming requests without login/auth.
+
+package com.eventmanagement.config;
+
+import com.eventmanagement.security.jwt.JwtAuthFilter; // Import your JWT filter
+import com.eventmanagement.security.services.CustomUserDetailsService; // Import your custom UserDetailsService
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+@EnableMethodSecurity // to enable method-level security
+@Configuration
+public class SecurityConfig {
+	
+	// Register the JWT Filter in SecurityConfig
+	@Autowired
+	 private JwtAuthFilter jwtAuthFilter;
+
+    @Autowired
+    private CustomUserDetailsService customUserDetailsService;
+
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ CORRECT CORS PLACEMENT
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+            		.requestMatchers("/api/auth/**").permitAll()
+            		.requestMatchers("/api/events/**").hasAnyRole("ADMIN", "ATTENDEE")
+            		.requestMatchers("/api/rsvps/event/**").hasRole("ADMIN")
+            		.requestMatchers("/api/rsvps/user/{userId}").hasRole("ADMIN")
+            		.requestMatchers("/api/rsvps/user").hasRole("ATTENDEE")
+            		.requestMatchers(HttpMethod.GET, "/api/rsvps").hasRole("ADMIN") // GET all RSVPs (admin only)
+            		.requestMatchers(HttpMethod.POST, "/api/rsvps").hasRole("ATTENDEE") // POST RSVP (attendee only)
+            		.requestMatchers("/api/rsvps/my-rsvps/**").hasRole("ATTENDEE")
+            		.anyRequest().authenticated()
+            // Specific order to avoid duplicates
+            )
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+    
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:3000")); // ✅ React origin
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true); // Only if you use cookies
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+    
+	// Provides authentication logic using your custom UserDetailsService
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider =  new DaoAuthenticationProvider();
+        provider.setUserDetailsService(customUserDetailsService); // use your custom logic to fetch user from DB
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+    
+    // For userServiceImpl
+    // Bean to encrypt passwords using BCrypt
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+    
+    // For signin request(AuthenticationManager)
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+    	return authConfig.getAuthenticationManager();
+    }
+}
+
+// Requires JWT token on /api/events calls
+
+// Reads user identity from JWTAuthFilter
+
+// Rejects unauthenticated requests
