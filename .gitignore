@@ -1,0 +1,13 @@
+# Ignore STS / Eclipse settings
+.classpath
+.project
+.settings/
+
+# Ignore build outputs
+target/
+
+# Ignore other IDE-specific files (VS Code, IntelliJ, etc.)
+.idea/
+*.iml
+.vscode/
+
